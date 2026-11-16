@@ -1,0 +1,30 @@
+# Quality gate of the Chrome extension (extractor/) and of the agent hooks and skills.
+# Origin: template «Extensión de Chrome» (takeoutDownloader, ADR-0008).
+# No path or branch filter: if this check becomes required on main, it must run on every PR,
+# stacked ones included.
+name: extractor
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extractor/package-lock.json
+      # --ignore-scripts: jsdom needs no install scripts, and a compromised dependency runs nothing.
+      - run: npm ci --ignore-scripts
+        working-directory: extractor
+      - run: npm test
+        working-directory: extractor
+      - name: hooks y skills de agentes
+        run: node --test ".agents/**/*.test.cjs" ".claude/skills/**/*.test.cjs"

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ContribExtraction</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <h1>ContribExtraction</h1>
+      <p id="status">Abre la pestaña de fotos de un perfil (/maps/contrib/&lt;id&gt;/photos) y pulsa Iniciar.</p>
+      <section aria-label="Galería completa">
+        <h2>Galería completa (atajo)</h2>
+        <p id="shortcut-status">Pide las páginas de la galería directamente (~1 petición por cada 100 fotos), sin abrir fotos. Deja la pestaña visible mientras corre.</p>
+        <label class="setting setting-inline">
+          <input id="shortcut-restart" type="checkbox" />
+          <span>Empezar desde el principio</span>
+        </label>
+        <div class="actions">
+          <button id="shortcut-start" class="primary">Iniciar / retomar</button>
+          <button id="shortcut-stop">Detener</button>
+        </div>
+        <button id="shortcut-open" class="secondary">Abrir resultado</button>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

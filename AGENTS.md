@@ -10,6 +10,8 @@ fernando gost, para reconstruir los viajes.
   terminado. Una feature nueva empieza escribiendo aquí su especificación.
 - [docs/agentes/plantilla/README.md](docs/agentes/plantilla/README.md): prácticas comunes de
   motercode para webs Next.js y qué vale de cada guía.
+- [extractor/AGENTS.md](extractor/AGENTS.md): si tocas `extractor/` (extensión de Chrome y backend
+  local), sus reglas se suman a estas.
 
 **Next.js 16 no es el que conoces.** Sus APIs y convenciones cambian entre versiones: antes de
 escribir código, lee la guía de la versión instalada en `node_modules/next/dist/docs/` (tras
@@ -73,6 +75,7 @@ npm test           # unitarios (Vitest), junto al código: src/**/*.test.ts
 npm run test:e2e   # E2E (Playwright) en e2e/; arranca npm run dev si no está abierto
 npm run admin      # panel de administración local (tools/admin/), escribe en data/admin/
 scripts/comprobar.sh   # secretos, regla 6, lint, build y tests; informe en .evidencia/
+.claude/skills/extension-test-and-pr/scripts/check.sh   # tests del extractor y de los hooks
 ```
 
 <!-- BEGIN:nextjs-agent-rules -->

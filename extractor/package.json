@@ -1,0 +1,25 @@
+{
+  "name": "contrib-extraction-manual",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend local para guardar contribuciones extraídas desde una extensión de Chrome usando un navegador normal del usuario.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "stop": "node -e \"const http=require('http'); const req=http.request({host:'localhost', port:3000, path:'/', method:'DELETE'}, res=>{console.log('Stop request sent'); process.exit(0);}); req.on('error', () => process.exit(0)); req.end();\"",
+    "test:maps-11": "node scripts/playwright-verify-11.js",
+    "export": "node scripts/export-harvest.js",
+    "exportTest": "node scripts/export-network.js --test",
+    "exportGallery": "node scripts/export-network.js",
+    "exportAlbum": "node scripts/export-album.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "jsdom": "^23.2.0",
+    "playwright": "^1.64.1"
+  }
+}

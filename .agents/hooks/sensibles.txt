@@ -1,0 +1,10 @@
+# Ficheros sensibles propios de este repositorio (configuración del proyecto, no plantilla).
+# guard-git.cjs pregunta antes de `git add -A` o de un commit que los incluya.
+# Una expresión regular por línea, sin distinguir mayúsculas, sobre la ruta relativa a la raíz.
+
+# Inventarios, logs y salidas del extractor: llevan los userId y las URLs de las cuentas.
+(^|/)harvest/
+(^|/)contribuciones[^/]*\.json$
+\.jsonl$
+# Sesiones guardadas por Playwright MCP
+(^|/)\.playwright-mcp/
