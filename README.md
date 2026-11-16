@@ -40,7 +40,7 @@ automatizan (`scripts/nuevo-cambio.sh`, `scripts/comprobar.sh`, `scripts/abrir-p
 
 ### Añadir o actualizar fotos
 
-1. Extrae las contribuciones con [`contribExtraction`](../contribExtraction) (extensión de Chrome + backend local), que genera `contribuciones.json`.
+1. Extrae las contribuciones con el extractor de [`extractor/`](extractor/) (extensión de Chrome + backend local), que genera `contribuciones.json`.
 2. Copia el fichero a `data/contributions/` con un nombre descriptivo, por ejemplo `motercode.json` o `fernando-gost.json`. Puede haber tantos ficheros como extracciones.
 3. Ejecuta `npm run datos:origen`: cuenta por fichero cuántas fotos vienen de Maps, de álbumes de Google Fotos o de otro sitio, y falla si hay alguna de otro sitio.
 4. Ejecuta `npm run build` (o haz push y Netlify lo construye).
@@ -83,7 +83,7 @@ No hace falta configurar variables de entorno ni claves de API.
 ## Estructura
 
 ```text
-data/contributions/          JSON exportados por contribExtraction (uno por extracción)
+data/contributions/          JSON exportados por el extractor (uno por extracción)
 src/app/page.tsx             Página principal (estática; carga los datos en el build)
 src/app/layout.tsx           Layout, metadatos y fuentes
 src/components/map/
@@ -97,6 +97,8 @@ e2e/                         Tests E2E de Playwright
 scripts/                     Automatización del ciclo issue → rama → comprobaciones → PR
 docs/features/               Especificación de cada feature por fases
 docs/agentes/plantilla/      Guías comunes para webs Next.js (alimentan next-netlify-template)
+extractor/                   Extensión de Chrome y backend local que extraen las fotos (paquete aparte)
+.agents/hooks/              Hooks de agentes (protegen main, informan del entorno)
 AGENTS.md                    Punto de entrada para agentes y personas nuevas
 netlify.toml                 Configuración de build y despliegue
 ```
@@ -140,7 +142,7 @@ Por eso solo se busca al pulsar Enter o el botón, nunca mientras se escribe.
 
 - **También álbumes de Google Fotos compartidos públicamente.** `contribExtraction` los exporta con `source: "googlePhotosAlbum"`. Su URL no dice el autor, así que se asignan a motercode (#7); se compartieron públicamente a propósito, así que cumplen la regla 2.
 
-Por eso existe `contribExtraction`. Recorre el perfil público en un navegador Chrome real con una extensión, porque Google bloquea los navegadores automatizados como Playwright, y guarda por cada foto su URL, coordenadas e imagen.
+Por eso existe `contribExtraction`, que desde #47 vive en `extractor/`. Recorre el perfil público en un navegador Chrome real con una extensión, porque Google bloquea los navegadores automatizados como Playwright, y guarda por cada foto su URL, coordenadas e imagen.
 
 ### Datos en `data/contributions/`, leídos en el build
 
@@ -169,6 +171,36 @@ Por eso existe `contribExtraction`. Recorre el perfil público en un navegador C
   lista, que se desfasaba con cada issue cerrado o reetiquetado (#15).
 - Tests unitarios con Vitest sobre datos ficticios y E2E con Playwright contra `npm run dev` en
   `localhost` (con `127.0.0.1`, Next.js 16 no hidrata la página en desarrollo).
+
+### El extractor vive en `extractor/`, con su propio `package.json`
+
+- **Paquete aparte.** No mezcla sus dependencias (Express, Playwright, jsdom) con las de la web, y
+  el ESLint de la web lo ignora. Antes era un repositorio suelto (`contribExtraction`); se trajo sin
+  datos personales: ni HAR, ni logs `.jsonl`, ni inventarios, ni capturas (#47).
+- **Su propia CI.** `.github/workflows/extractor.yml` pasa sus pruebas (`node:test` + jsdom) y las de
+  los hooks y skills de agentes; en local, `.claude/skills/extension-test-and-pr/scripts/check.sh`.
+- **Reglas propias** en [extractor/AGENTS.md](extractor/AGENTS.md), con las guías de la plantilla
+  «Extensión de Chrome» (referente: takeoutDownloader).
+
+### La extensión: service worker y content script en el mundo `MAIN`
+
+- **El service worker** (`background.js`) habla con el backend local (`localhost:3000`) y lee el
+  EXIF de los originales para la fecha de captura.
+- **`network-tap.js` va en el mundo `MAIN`** desde `document_start`: así escucha las respuestas de
+  red de la propia página de Maps, que un content script aislado no ve. `content.js` sigue en el
+  mundo aislado y recorre el DOM.
+- **Lógica duplicada vigilada.** El service worker no puede importar los módulos de `lib/`, así que
+  `toCanonicalMapsUrl` y `readExifTakenAt` tienen dos copias; `extractor/test/paridad.test.js`
+  comprueba que dan lo mismo.
+
+### Hooks de agentes desde una única fuente
+
+- **Un solo código** en `.agents/hooks/`, cableado para Claude Code (`.claude/settings.json`), Copilot
+  (`.github/hooks/`) y Antigravity (`.agents/hooks.json`): uno impide commits, push y `gh pr merge`
+  sobre `main`; otro informa al empezar la sesión de la rama, los cambios sin commit y las
+  herramientas que faltan.
+- **La barrera real es GitHub.** Los hooks son una ayuda local; `main` está protegida: se fusiona
+  solo por PR, con el check `test` en verde, y sin force-push ni borrado.
 
 ### Fotos agrupadas por zoom con supercluster
 
